@@ -1,7 +1,6 @@
 import express from "express";
 
 import { devices } from "./data.js";
-import { utils } from "./utils.js";
 
 const app = express();
 
@@ -13,22 +12,20 @@ app.get("/api/health", (req, res) => {
 });
 
 app.get("/api/devices", (req, res) => {
-    const queryParams = req.query;
-    console.log(queryParams, utils.isEmpty(queryParams));
+    const { status } = req.query;
+    let filteredDevices;
 
-    if (!utils.isEmpty(queryParams)) {
-        console.log(`NOT EMPTY: `);
-        res.json({
-            status: "OK",
-            data: devices,
+    if (status) {
+        filteredDevices = devices.filter((device) => {
+            return device.status === status;
         });
     } else {
-        console.log(req.query);
-        res.json({
-            status: "OK",
-            data: "NOPE",
-        });
+        filteredDevices = devices;
     }
+    res.json({
+        status: "OK",
+        data: filteredDevices,
+    });
 });
 
 app.get("/api/devices/:id", (req, res) => {
