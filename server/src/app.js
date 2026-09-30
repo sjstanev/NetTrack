@@ -19,9 +19,7 @@ app.get("/api/devices", (req, res) => {
     let filteredDevices = devices;
 
     if (status) {
-        filteredDevices = devices.filter(
-            (device) => device.status === status,
-        );
+        filteredDevices = devices.filter((device) => device.status === status);
     }
 
     res.json({
@@ -30,42 +28,27 @@ app.get("/api/devices", (req, res) => {
     });
 });
 
-app.get("/api/devices/:id", (req, res) => {
-    const { id } = req.params;
-
-    if (!/^\d+$/.test(id)) {
-        return res.status(400).json({
-            status: "error",
-            message: "Invalid device ID",
-        });
-    }
-
-    const deviceId = parseInt(id, 10);
-
-    const foundDevice = devices.find(
-        (device) => device.id === deviceId,
-    );
-
-    if (!foundDevice) {
-        return res.status(404).json({
-            status: "error",
-            message: "Device not found",
-        });
-    }
-
-    res.json({
-        status: "OK",
-        data: foundDevice,
-    });
-});
-
 app.post("/api/devices", (req, res) => {
     const { hostname, ipAddress, vendor, model, status } = req.body;
 
-    if (!hostname || !ipAddress || !vendor || !model || !status) {
+    const requiredFields = [hostname, ipAddress, vendor, model, status];
+    const allowedStatuses = ["online", "offline"];
+
+    const hasInvalidField = requiredFields.some(
+        (field) => typeof field !== "string" || field.trim() === "",
+    );
+
+    if (hasInvalidField) {
         return res.status(400).json({
             status: "error",
-            message: "Missing required fields",
+            message: "Missing or invalid required fields",
+        });
+    }
+
+    if (!allowedStatuses.includes(status)) {
+        return res.status(400).json({
+            status: "error",
+            message: "Invalid status",
         });
     }
 
@@ -82,7 +65,7 @@ app.post("/api/devices", (req, res) => {
 
     devices.push(newDevice);
 
-    res.status(201).json({
+    return res.status(201).json({
         status: "OK",
         data: newDevice,
     });
