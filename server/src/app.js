@@ -4,6 +4,8 @@ import { devices } from "./data.js";
 
 const app = express();
 
+app.use(express.json());
+
 app.get("/api/health", (req, res) => {
     res.json({
         status: "OK",
@@ -53,6 +55,20 @@ app.get("/api/devices/:id", (req, res) => {
             message: "Device not found",
         });
     }
+});
+
+/**
+ * curl -X POST http://localhost:3000/api/devices -H "Content-Type: application/json" -d "{\"hostname\":\"SW-ACCESS-03\",\"ipAddress\":\"10.30.5.22\",\"vendor\":\"Cisco\",\"model\":\"C9200L-48P-4G\",\"status\":\"online\"}"
+ */
+app.post("/api/devices", (req, res) => {
+    const newDevice = req.body;
+    const id = devices.length + 1;
+    newDevice.id = id;
+    devices.push(newDevice);
+    res.status(201).json({
+        status: "OK",
+        data: newDevice,
+    });
 });
 
 export default app;
