@@ -15,15 +15,15 @@ app.get("/api/health", (req, res) => {
 
 app.get("/api/devices", (req, res) => {
     const { status } = req.query;
-    let filteredDevices;
+
+    let filteredDevices = devices;
 
     if (status) {
-        filteredDevices = devices.filter((device) => {
-            return device.status === status;
-        });
-    } else {
-        filteredDevices = devices;
+        filteredDevices = devices.filter(
+            (device) => device.status === status,
+        );
     }
+
     res.json({
         status: "OK",
         data: filteredDevices,
@@ -32,39 +32,56 @@ app.get("/api/devices", (req, res) => {
 
 app.get("/api/devices/:id", (req, res) => {
     const { id } = req.params;
+
     if (!/^\d+$/.test(id)) {
-        return res
-            .status(400)
-            .json({ status: "error", message: "Invalid device ID" });
+        return res.status(400).json({
+            status: "error",
+            message: "Invalid device ID",
+        });
     }
 
     const deviceId = parseInt(id, 10);
 
-    const foundDevice = devices.find((device) => {
-        return device.id === deviceId;
-    });
+    const foundDevice = devices.find(
+        (device) => device.id === deviceId,
+    );
 
-    if (foundDevice) {
-        res.json({
-            status: "OK",
-            data: foundDevice,
-        });
-    } else {
+    if (!foundDevice) {
         return res.status(404).json({
             status: "error",
             message: "Device not found",
         });
     }
+
+    res.json({
+        status: "OK",
+        data: foundDevice,
+    });
 });
 
-/**
- * curl -X POST http://localhost:3000/api/devices -H "Content-Type: application/json" -d "{\"hostname\":\"SW-ACCESS-03\",\"ipAddress\":\"10.30.5.22\",\"vendor\":\"Cisco\",\"model\":\"C9200L-48P-4G\",\"status\":\"online\"}"
- */
 app.post("/api/devices", (req, res) => {
-    const newDevice = req.body;
+    const { hostname, ipAddress, vendor, model, status } = req.body;
+
+    if (!hostname || !ipAddress || !vendor || !model || !status) {
+        return res.status(400).json({
+            status: "error",
+            message: "Missing required fields",
+        });
+    }
+
     const id = devices.length + 1;
-    newDevice.id = id;
+
+    const newDevice = {
+        id,
+        hostname,
+        ipAddress,
+        vendor,
+        model,
+        status,
+    };
+
     devices.push(newDevice);
+
     res.status(201).json({
         status: "OK",
         data: newDevice,
