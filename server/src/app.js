@@ -122,6 +122,35 @@ app.put("/api/devices/:id", (req, res) => {
     });
 });
 
+app.delete("/api/devices/:id", (req, res) => {
+    let id = req.params.id;
+
+    if (!/^\d+$/.test(id)) {
+        return res.status(400).json({
+            status: "error",
+            message: "Invalid device ID",
+        });
+    }
+
+    id = Number(id);
+
+    for (let device of devices) {
+        if (device.id === id) {
+            const idx = devices.indexOf(device);
+
+            devices.splice(idx, 1);
+            return res.status(200).json({
+                status: "OK",
+                message: "Device deleted",
+            });
+        }
+    }
+    return res.status(404).json({
+        status: "error",
+        message: "Device not found",
+    });
+});
+
 function validateRequiredFields(requiredFields) {
     return requiredFields.every(
         (field) => typeof field === "string" && field.trim() !== "",
