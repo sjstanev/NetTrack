@@ -35,11 +35,7 @@ app.post("/api/devices", (req, res) => {
 
     const requiredFields = [hostname, ipAddress, vendor, model, status];
 
-    const hasInvalidField = requiredFields.some(
-        (field) => typeof field !== "string" || field.trim() === "",
-    );
-
-    if (hasInvalidField) {
+    if (!validateRequiredFields(requiredFields)) {
         return res.status(400).json({
             status: "error",
             message: "Missing or invalid required fields",
@@ -88,11 +84,7 @@ app.put("/api/devices/:id", (req, res) => {
 
     const requiredFields = [hostname, ipAddress, vendor, model, status];
 
-    const hasInvalidField = requiredFields.some(
-        (field) => typeof field !== "string" || field.trim() === "",
-    );
-
-    if (hasInvalidField) {
+    if (!validateRequiredFields(requiredFields)) {
         return res.status(400).json({
             status: "error",
             message: "Missing or invalid required fields",
@@ -129,5 +121,11 @@ app.put("/api/devices/:id", (req, res) => {
         message: "Device not found",
     });
 });
+
+function validateRequiredFields(requiredFields) {
+    return requiredFields.every(
+        (field) => typeof field === "string" && field.trim() !== "",
+    );
+}
 
 export default app;
